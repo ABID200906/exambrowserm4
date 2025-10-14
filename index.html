@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Riyu Exambro Mobile</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+      color: #333;
+      height: 100vh;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+    
+    /* Main Screen */
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 20px;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .app-header {
+      text-align: center;
+      margin-bottom: 40px;
+      color: white;
+    }
+    
+    .app-header h1 {
+      font-size: 28px;
+      margin: 0 0 10px 0;
+      font-weight: 700;
+    }
+    
+    .app-header p {
+      font-size: 16px;
+      margin: 0;
+      opacity: 0.9;
+    }
+    
+    .input-container {
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 20px;
+    }
+    
+    .url-input {
+      width: 100%;
+      padding: 16px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      outline: none;
+    }
+    
+    .button-group {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .action-button {
+      width: 100%;
+      padding: 18px;
+      font-size: 17px;
+      font-weight: 600;
+      border: none;
+      border-radius: 14px;
+      background: white;
+      color: #1976D2;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .action-button:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+    
+    .primary-button {
+      background: #FF9800;
+      color: white;
+    }
+    
+    /* Exam Mode */
+    .exam-mode {
+      display: none;
+      height: 100vh;
+      width: 100%;
+      flex-direction: column;
+    }
+    
+    .exam-navbar {
+      height: 60px;
+      background: #1976D2;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+      position: relative;
+    }
+    
+    .exam-title {
+      font-size: 18px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70%;
+    }
+    
+    .exam-menu-button {
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    
+    .exam-menu-button:active {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .exam-frame-container {
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    .exam-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    
+    /* Mobile Menu */
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 80%;
+      max-width: 300px;
+      height: 100%;
+      background: white;
+      box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      transition: right 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+    
+    .mobile-menu.open {
+      right: 0;
+    }
+    
+    .menu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .menu-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1976D2;
+    }
+    
+    .close-menu {
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+    
+    .menu-item {
+      padding: 16px 0;
+      font-size: 17px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #333;
+    }
+    
+    .menu-item:active {
+      background: #f5f5f5;
+    }
+    
+    .menu-item-icon {
+      font-size: 20px;
+      width: 24px;
+      text-align: center;
+    }
+    
+    .menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: none;
+    }
+    
+    .menu-overlay.show {
+      display: block;
+    }
+    
+    /* Fullscreen Notification */
+    .fullscreen-notification {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(25, 118, 210, 0.95);
+      color: white;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .notification-icon {
+      font-size: 60px;
+      margin-bottom: 20px;
+    }
+    
+    .notification-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+    
+    .notification-text {
+      font-size: 16px;
+      margin-bottom: 30px;
+      line-height: 1.5;
+      max-width: 300px;
+    }
+    
+    .notification-button {
+      padding: 16px 30px;
+      font-size: 17px;
+      font-weight: 600;
+      background: white;
+      color: #1976D2;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Quick Actions - Floating Button */
+    .quick-actions {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+    }
+    
+    .floating-button {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #1976D2;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .floating-button:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .action-buttons {
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+    
+    .action-buttons.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+    
+    .mini-action-button {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #FF9800;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .mini-action-button:active {
+      transform: scale(0.95);
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-height: 700px) {
+      .app-header {
+        margin-bottom: 20px;
+      }
+      
+      .app-header h1 {
+        font-size: 24px;
+      }
+      
+      .action-button {
+        padding: 14px;
+      }
+    }
+    
+    @media (max-width: 350px) {
+      .main-container {
+        padding: 15px;
+      }
+      
+      .app-header h1 {
+        font-size: 24px;
+      }
+      
+      .url-input {
+        padding: 14px 16px;
+      }
+    }
+    
+    @media (max-width: 380px) {
+      .exam-title {
+        max-width: 60%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Main Screen -->
+  <div class="main-container" id="mainScreen">
+    <div class="app-header">
+      <h1>Riyu Exambro</h1>
+      <p>Akses ujian online dengan mudah</p>
+    </div>
+    
+    <div class="input-container">
+      <input type="text" class="url-input" id="urlInput" placeholder="Masukkan URL ujian" autocomplete="off">
+    </div>
+    
+    <div class="button-group">
+      <button class="action-button primary-button" onclick="aksesUrl()">
+        <span>🚀</span> AKSES UJIAN
+      </button>
+      <button class="action-button" onclick="scanQR()">
+        <span>📷</span> SCAN QR CODE
+      </button>
+    </div>
+  </div>
+  
+  <!-- Exam Mode -->
+  <div class="exam-mode" id="examMode">
+    <div class="exam-navbar">
+      <div class="exam-title" id="examTitle">Ujian</div>
+      <div class="exam-menu-button" onclick="openMobileMenu()">☰</div>
+    </div>
+    
+    <div class="exam-frame-container">
+      <iframe class="exam-frame" id="examFrame" allowfullscreen></iframe>
+    </div>
+    
+    <!-- Quick Actions - Floating Button -->
+    <div class="quick-actions">
+      <div class="action-buttons" id="actionButtons">
+        <div class="mini-action-button" onclick="refreshExam()" title="Refresh">
+          🔄
+        </div>
+        <div class="mini-action-button" onclick="openGoogle()" title="Buka Google">
+          🌐
+        </div>
+        <div class="mini-action-button" onclick="exitFullscreen()" title="Keluar Fullscreen">
+          📱
+        </div>
+      </div>
+      <div class="floating-button" onclick="toggleQuickActions()">
+        +
+      </div>
+    </div>
+  </div>
+  
+  <!-- Mobile Menu -->
+  <div class="menu-overlay" id="menuOverlay" onclick="closeMobileMenu()"></div>
+  
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="menu-header">
+      <div class="menu-title">Menu Ujian</div>
+      <div class="close-menu" onclick="closeMobileMenu()">✕</div>
+    </div>
+    
+    <div class="menu-item" onclick="refreshExam(); closeMobileMenu();">
+      <div class="menu-item-icon">🔄</div>
+      <div>Refresh Halaman</div>
+    </div>
+    
+    <div class="menu-item" onclick="openGoogle(); closeMobileMenu();">
+      <div class="menu-item-icon">🌐</div>
+      <div>Buka Google</div>
+    </div>
+    
+    <div class="menu-item" onclick="exitFullscreen(); closeMobileMenu();">
+      <div class="menu-item-icon">📱</div>
+      <div>Keluar Fullscreen</div>
+    </div>
+    
+    <div class="menu-item" onclick="exitExamMode(); closeMobileMenu();">
+      <div class="menu-item-icon">🚪</div>
+      <div>Keluar Ujian</div>
+    </div>
+  </div>
+  
+  <!-- Fullscreen Notification -->
+  <div class="fullscreen-notification" id="fullscreenNotification">
+    <div class="notification-icon">📱</div>
+    <div class="notification-title">Mode Ujian</div>
+    <div class="notification-text">
+      Aplikasi akan masuk ke mode fullscreen untuk pengalaman ujian yang optimal.
+    </div>
+    <button class="notification-button" onclick="hideFullscreenNotification()">Mengerti</button>
+  </div>
+
+  <script>
+    let isExamMode = false;
+    let currentUrl = '';
+    let quickActionsVisible = false;
+    
+    // Fungsi untuk mengakses URL
+    function aksesUrl() {
+      const url = document.getElementById("urlInput").value.trim();
+      if (url) {
+        // Tambahkan http:// jika tidak ada protokol
+        let fullUrl = url;
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          fullUrl = 'https://' + url;
+        }
+        
+        currentUrl = fullUrl;
+        // Masuk ke mode ujian
+        enterExamMode(fullUrl);
+      } else {
+        alert("Masukkan URL terlebih dahulu!");
+      }
+    }
+
+    // Fungsi untuk scan QR (placeholder)
+    function scanQR() {
+      alert("Fitur scan QR akan tersedia dalam versi mendatang.");
+    }
+    
+    // Masuk ke mode ujian
+    function enterExamMode(url) {
+      isExamMode = true;
+      document.getElementById('mainScreen').style.display = 'none';
+      
+      const examMode = document.getElementById('examMode');
+      const examFrame = document.getElementById('examFrame');
+      
+      examMode.style.display = 'flex';
+      examFrame.src = url;
+      
+      // Ekstrak domain untuk judul
+      try {
+        const domain = new URL(url).hostname.replace('www.', '');
+        document.getElementById('examTitle').textContent = domain;
+      } catch (e) {
+        console.error('URL tidak valid', e);
+      }
+      
+      // Tampilkan notifikasi fullscreen
+      document.getElementById('fullscreenNotification').style.display = 'flex';
+      
+      // Masuk fullscreen setelah jeda singkat
+      setTimeout(() => {
+        requestFullscreen();
+      }, 1500);
+    }
+    
+    // Keluar dari mode ujian
+    function exitExamMode() {
+      if (!confirm("Apakah Anda yakin ingin keluar dari mode ujian?")) {
+        return;
+      }
+      
+      isExamMode = false;
+      document.getElementById('mainScreen').style.display = 'flex';
+      document.getElementById('examMode').style.display = 'none';
+      document.getElementById('examFrame').src = '';
+      exitFullscreen();
+    }
+    
+    // Refresh halaman ujian
+    function refreshExam() {
+      if (currentUrl) {
+        document.getElementById('examFrame').src = currentUrl;
+      }
+      hideQuickActions();
+    }
+    
+    // Buka Google di tab baru
+    function openGoogle() {
+      window.open('https://www.google.com', '_blank');
+      hideQuickActions();
+    }
+    
+    // Fungsi untuk mobile menu
+    function openMobileMenu() {
+      document.getElementById('mobileMenu').classList.add('open');
+      document.getElementById('menuOverlay').classList.add('show');
+    }
+    
+    function closeMobileMenu() {
+      document.getElementById('mobileMenu').classList.remove('open');
+      document.getElementById('menuOverlay').classList.remove('show');
+    }
+    
+    // Fungsi untuk quick actions
+    function toggleQuickActions() {
+      const actionButtons = document.getElementById('actionButtons');
+      if (quickActionsVisible) {
+        actionButtons.classList.remove('show');
+        quickActionsVisible = false;
+      } else {
+        actionButtons.classList.add('show');
+        quickActionsVisible = true;
+      }
+    }
+    
+    function hideQuickActions() {
+      document.getElementById('actionButtons').classList.remove('show');
+      quickActionsVisible = false;
+    }
+    
+    // Sembunyikan notifikasi fullscreen
+    function hideFullscreenNotification() {
+      document.getElementById('fullscreenNotification').style.display = 'none';
+    }
+    
+    // Fungsi fullscreen untuk mobile
+    function requestFullscreen() {
+      const elem = document.documentElement;
+      
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(err => {
+          console.error(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else if (elem.webkitRequestFullscreen) { /* Safari */
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { /* IE11 */
+        elem.msRequestFullscreen();
+      } else if (elem.mozRequestFullScreen) { /* Firefox */
+        elem.mozRequestFullScreen();
+      } else {
+        // Fallback untuk perangkat yang tidak mendukung fullscreen API
+        alert("Perangkat Anda tidak mendukung mode fullscreen. Pastikan Anda menggunakan browser terbaru.");
+      }
+    }
+    
+    function exitFullscreen() {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) { /* Safari */
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) { /* IE11 */
+        document.msExitFullscreen();
+      } else if (document.mozCancelFullScreen) { /* Firefox */
+        document.mozCancelFullScreen();
+      }
+      hideQuickActions();
+    }
+    
+    // Deteksi perubahan fullscreen
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    
+    function handleFullscreenChange() {
+      const fullscreenElement = document.fullscreenElement || 
+                               document.webkitFullscreenElement ||
+                               document.mozFullScreenElement ||
+                               document.msFullscreenElement;
+      
+      if (!fullscreenElement && isExamMode) {
+        // Jika keluar dari fullscreen saat masih dalam mode ujian
+        document.getElementById('fullscreenNotification').style.display = 'flex';
+        
+        // Coba masuk fullscreen lagi setelah 3 detik
+        setTimeout(() => {
+          if (isExamMode && !document.fullscreenElement && 
+              !document.webkitFullscreenElement && 
+              !document.mozFullScreenElement && 
+              !document.msFullscreenElement) {
+            requestFullscreen();
+          }
+        }, 3000);
+      } else if (fullscreenElement && isExamMode) {
+        // Sembunyikan notifikasi saat berhasil masuk fullscreen
+        document.getElementById('fullscreenNotification').style.display = 'none';
+      }
+    }
+    
+    // Auto-focus pada input URL saat halaman dimuat
+    window.onload = function() {
+      document.getElementById('urlInput').focus();
+      
+      // Deteksi jika perangkat adalah iOS
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+        // Tambahkan gaya khusus untuk iOS jika diperlukan
+        document.body.classList.add('ios-device');
+      }
+    };
+    
+    // Tangani orientasi layar
+    window.addEventListener('orientationchange', function() {
+      // Jika dalam mode ujian, pastikan tetap fullscreen setelah rotasi
+      if (isExamMode) {
+        setTimeout(() => {
+          if (!document.fullscreenElement && 
+              !document.webkitFullscreenElement && 
+              !document.mozFullScreenElement && 
+              !document.msFullscreenElement) {
+            requestFullscreen();
+          }
+        }, 500);
+      }
+    });
+    
+    // Tutup quick actions saat klik di luar
+    document.addEventListener('click', function(event) {
+      const quickActions = document.querySelector('.quick-actions');
+      const floatingButton = document.querySelector('.floating-button');
+      
+      if (quickActionsVisible && 
+          !quickActions.contains(event.target) && 
+          !floatingButton.contains(event.target)) {
+        hideQuickActions();
+      }
+    });
+  </script>
+</body>
+</html>
