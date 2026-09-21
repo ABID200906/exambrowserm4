@@ -6,6 +6,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Riyu Exambro Mobile</title>
+  
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -348,7 +351,83 @@
     .mini-action-button:active {
       transform: scale(0.95);
     }
-    
+
+    /* QR Scanner Modal */
+    .qr-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 3000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(5px);
+    }
+
+    .qr-modal-content {
+      background: white;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .qr-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #1976D2;
+      color: white;
+    }
+
+    .qr-modal-header h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .qr-close-btn {
+      font-size: 24px;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+    }
+
+    .qr-reader-container {
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    #reader {
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid #ddd;
+    }
+
+    #reader button {
+      background-color: #1976D2;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 10px 0;
+    }
+
     /* Responsive Adjustments */
     @media (max-height: 700px) {
       .app-header {
@@ -477,10 +556,24 @@
     <button class="notification-button" onclick="hideFullscreenNotification()">Mengerti</button>
   </div>
 
+  <!-- QR Scanner Modal -->
+  <div class="qr-modal-overlay" id="qrScannerModal">
+    <div class="qr-modal-content">
+      <div class="qr-modal-header">
+        <h3>Scan QR Ujian</h3>
+        <div class="qr-close-btn" onclick="closeQRScanner()">✕</div>
+      </div>
+      <div class="qr-reader-container">
+        <div id="reader"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     let isExamMode = false;
     let currentUrl = '';
     let quickActionsVisible = false;
+    let html5QrcodeScanner = null;
     
     // Fungsi untuk mengakses URL
     function aksesUrl() {
@@ -500,9 +593,64 @@
       }
     }
 
-    // Fungsi untuk scan QR (placeholder)
+    // Fungsi untuk scan QR
     function scanQR() {
-      alert("Fitur scan QR akan tersedia dalam versi mendatang.");
+      // Tampilkan modal pemindai QR
+      document.getElementById('qrScannerModal').style.display = 'flex';
+
+      // Inisialisasi scanner jika belum ada
+      if (!html5QrcodeScanner) {
+        // Parameter untuk mengatur scanner (FPS tinggi agar responsif)
+        html5QrcodeScanner = new Html5QrcodeScanner(
+          "reader",
+          { 
+            fps: 15, 
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
+            showTorchButtonIfSupported: true
+          },
+          /* verbose= */ false
+        );
+      }
+
+      // Mulai render UI dan jalankan kamera
+      html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    }
+
+    // Fungsi dipanggil ketika QR Code berhasil dibaca
+    function onScanSuccess(decodedText, decodedResult) {
+      // Hentikan pemindaian setelah berhasil membaca
+      html5QrcodeScanner.clear().then(() => {
+        // Sembunyikan modal
+        document.getElementById('qrScannerModal').style.display = 'none';
+        
+        // Masukkan teks hasil pemindaian ke input
+        document.getElementById("urlInput").value = decodedText;
+        
+        // Langsung akses URL
+        aksesUrl();
+      }).catch(error => {
+        console.error("Gagal menghentikan scanner.", error);
+      });
+    }
+
+    // Fungsi dipanggil saat scan berlanjut namun belum menemukan QR
+    function onScanFailure(error) {
+      // Diabaikan karena ini akan berjalan setiap frame video
+    }
+
+    // Fungsi untuk menutup scanner (Tombol X)
+    function closeQRScanner() {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear().then(() => {
+          document.getElementById('qrScannerModal').style.display = 'none';
+        }).catch(error => {
+          console.error("Gagal menghentikan scanner.", error);
+          document.getElementById('qrScannerModal').style.display = 'none';
+        });
+      } else {
+        document.getElementById('qrScannerModal').style.display = 'none';
+      }
     }
     
     // Masuk ke mode ujian
@@ -609,7 +757,8 @@
         elem.mozRequestFullScreen();
       } else {
         // Fallback untuk perangkat yang tidak mendukung fullscreen API
-        alert("Perangkat Anda tidak mendukung mode fullscreen. Pastikan Anda menggunakan browser terbaru.");
+        // Diperbarui agar tidak mengganggu pengalaman (hanya mencetak di console)
+        console.warn("Perangkat Anda tidak mendukung mode fullscreen API.");
       }
     }
     
