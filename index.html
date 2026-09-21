@@ -489,7 +489,7 @@
   <!-- Exam Mode -->
   <div class="exam-mode" id="examMode">
     <div class="exam-navbar">
-      <div class="exam-title" id="examTitle">Ujian</div>
+      <div class="exam-title" id="examTitle">Riyu Exambrowser</div>
       <div class="exam-menu-button" onclick="openMobileMenu()">☰</div>
     </div>
     
@@ -664,13 +664,8 @@
       examMode.style.display = 'flex';
       examFrame.src = url;
       
-      // Ekstrak domain untuk judul
-      try {
-        const domain = new URL(url).hostname.replace('www.', '');
-        document.getElementById('examTitle').textContent = domain;
-      } catch (e) {
-        console.error('URL tidak valid', e);
-      }
+      // Hapus bagian ekstraksi domain karena kita menggunakan judul tetap
+      // document.getElementById('examTitle').textContent = 'Riyu Exambrowser'; // Sudah di-set di HTML
       
       // Tampilkan notifikasi fullscreen
       document.getElementById('fullscreenNotification').style.display = 'flex';
